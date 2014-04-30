@@ -1,0 +1,70 @@
+# -*-Shell-script-*-
+# Copyright (c) 2013 Red Hat, Inc. <http://www.redhat.com>
+#
+# Author: fharshav@redhat.com
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# This file is part of structured-sources
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+DEFAULT_DOWNLOAD_PATH="/opt/structured-sources"
+
+if [ ! -d ${DEFAULT_DOWNLOAD_PATH} ]; then
+    mkdir -p ${DEFAULT_DOWNLOAD_PATH}
+fi
+
+function is_valid_url()
+{
+    local url=$1
+    response=$(curl -I -k $url | grep HTTP | head -1 | awk {'print $2'})
+    return ${response}
+}
+
+function is_valid_ftp_url()
+{
+    local url=$1
+    response=$(curl $url --user anonymous: 2>/dev/null | wc -l)
+    return ${response}
+}
+
+function download_nossl()
+{
+    local url=$1
+    wget -c --no-check-certificate --directory-prefix=${DEFAULT_DOWNLOAD_PATH} $url
+}
+
+function download_recursive_nossl()
+{
+    local rejectlist="index.html*,Thumbs.db,*.gif"
+    local url=$1
+    wget --no-check-certificate -c -rkp -nH --cut-dirs=1 --reject=${rejectlist} --no-parent \
+	--directory-prefix=${DEFAULT_DOWNLOAD_PATH} ${url}
+}
+
+function download_recursive_nossl_curl()
+{
+    local url=$1
+    curld ${url} ${DEFAULT_DOWNLOAD_PATH}
+}
+
+function curld()
+{
+    local current_dir=$(pwd)
+    (cd $2 >/dev/null; curl -I -k -O $1; cd ${current_dir} >/dev/null;)
+}
+
+function download_rsync()
+{
+    local url=$1
+    rsync -avh --progress ${url} ${DEFAULT_DOWNLOAD_PATH}
+}

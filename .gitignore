@@ -1,0 +1,17 @@
+aclocal.m4
+autom4te.cache
+build
+config.*
+configure
+depcomp
+install-sh
+ltmain.sh
+Makefile.in
+missing
+*.sw?
+*~
+Makefile
+stamp-h1
+*tar.bz2
+*tar.gz
+bin/sources

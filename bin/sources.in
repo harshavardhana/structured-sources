@@ -1,0 +1,94 @@
+#!/bin/bash
+# Copyright (c) 2013 Red Hat, Inc. <http://www.redhat.com>
+#
+# Author: fharshav@redhat.com
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# This file is part of structured-sources
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+function _init()
+{
+    prefix="@prefix@";
+    exec_prefix="@exec_prefix@";
+    sysconfdir="@sysconfdir@";
+    if [ ! -f /etc/sources/include.rc ]; then
+	echo "Seems like structured-sources repository is corrupted, please fix.."
+	exit 1
+    fi
+}
+
+function download()
+{
+    local formula=$1
+    if [[ $formula == "all" ]]; then
+	# Download all formula
+	. ${sysconfdir}/sources/formula/allskydb.rc
+	. ${sysconfdir}/sources/formula/ameco.rc
+	. ${sysconfdir}/sources/formula/bibliographic.rc
+	. ${sysconfdir}/sources/formula/enronemail.rc
+	. ${sysconfdir}/sources/formula/ensemble.rc
+	. ${sysconfdir}/sources/formula/freebase.rc
+	. ${sysconfdir}/sources/formula/gutenberg.rc
+	. ${sysconfdir}/sources/formula/hostipinfo.rc
+	. ${sysconfdir}/sources/formula/include.rc
+	. ${sysconfdir}/sources/formula/metafilter.rc
+	. ${sysconfdir}/sources/formula/musicbrainz.rc
+	. ${sysconfdir}/sources/formula/nlpstanford.rc
+	. ${sysconfdir}/sources/formula/openanc.rc
+	. ${sysconfdir}/sources/formula/opendirectory.rc
+	. ${sysconfdir}/sources/formula/openlibrary.rc
+	. ${sysconfdir}/sources/formula/openstreetmap.rc
+	. ${sysconfdir}/sources/formula/planetaryclimate.rc
+	. ${sysconfdir}/sources/formula/sanfrancisco.rc
+	. ${sysconfdir}/sources/formula/wordnet.rc
+	. ${sysconfdir}/sources/formula/worldbank.rc
+    else
+	# Download specific formula
+	if [ ! -f ${sysconfdir}/sources/formula/${formula}.rc ]; then
+	    echo "Looks like provided formula: ${formula} does not exist.."
+	    echo "Consider providing a patch for ${formula}.rc"
+	    exit 3
+	fi
+	. ${sysconfdir}/sources/formula/${formula}.rc
+    fi
+}
+
+function options()
+{
+    local option=$1
+    local formula=$2
+    if [[ $option == "install" ]]; then
+	# First time
+	download $formula
+    fi
+}
+
+function main()
+{
+    if [ $# -lt 2 ]; then
+	echo "TypeError:"
+	echo "Please follow the usage format as indicated below"
+	echo "Usage: sources install [all|<formula_name>"
+	exit 1
+    fi
+    if [[  $1 != "install" ]]; then
+	echo "Invalid Argument:"
+	echo "Please follow the usage format as indicated below"
+	echo "Usage: sources install [all|<formula_name>"
+	exit 2
+    fi
+    options $1 $2
+}
+
+_init "$@" && main "$@"
